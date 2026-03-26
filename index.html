@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dylan Rafael's Portfolio</title>
+
+    <!-- Include bootstrap, as well as our custom stylesheet -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="index.css" rel="stylesheet" type="text/css">
+  </head>
+  <body>
+
+    <!-- The header of our page -->
+    <div class="d-flex justify-content-center">
+        <div class="bg-light bg-gradient rounded m-4 p-2 px-4 text-center">
+            <div class="display-4">Dylan Rafael <b>/</b> flooferplusplus</div>
+            <hr class="border-2 border-top border-black">
+            <div class="lead"><i>Engine</i>, <i>Gameplay</i>, and <i>Graphics</i> Programmer</div>
+        </div>
+    </div>
+
+    <div class="project">
+        <h1>Temperament</h1>
+        <p>
+            Header about temperament.
+        </p>
+        <p>
+            Detailed information about temperament.
+        </p>
+    </div>
+    
+    <div class="project">
+        <h1>Commencement</h1>
+        <p>
+            Header about commencement.
+        </p>
+        <p>
+            Detailed nformation about commencement.
+        </p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <script src="https://xemantic.github.io/shader-web-background/dist/shader-web-background.min.js"></script>
+
+    <script src="background.fs", type="x-shader/x-fragment" id="background">
+        precision highp float;
+
+        void main() {
+            gl_FragColor = vec4(1., 1., 1., 1.);
+        }
+    </script>
+
+    <script>
+    shaderWebBackground.shade({
+        shaders: {
+            background: {}
+        }
+    });
+    </script>
+    <style>
+    .shader-web-background-fallback {
+        background: var(--bs-white);
+        background-position: center;
+        background-size: cover;
+        background-attachment: fixed;
+    }
+    </style>
+
+    </body>
+</html>

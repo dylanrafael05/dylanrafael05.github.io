@@ -1,0 +1,31 @@
+:root {
+    --border-size: 10px;
+    --margin: 10px;
+    --padding: 10px;
+    --bg-color: var(--bs-gray-200);
+    --fg-color: var(--bs-gray-100);
+}
+
+.boxed {
+    border-radius: var(--border-size);
+    background-color: var(--fg-color);
+    margin: 10px;
+    padding: 5px;
+}
+
+.headerwrapper {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.header {
+    width: fit-content;
+    text-align: center;
+    padding-left: 5%;
+    padding-right: 5%;
+}
+
+.br {
+    flex-basis: 100%;
+}
