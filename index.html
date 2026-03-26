@@ -42,25 +42,176 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     <script src="https://xemantic.github.io/shader-web-background/dist/shader-web-background.min.js"></script>
+    <script src="index.js"></script>
 
-    <script src="background.fs", type="x-shader/x-fragment" id="background">
+    <script type="x-shader/x-fragment" id="background">
         precision highp float;
 
+        uniform float time;
+        uniform vec2 resolution;
+
+        float permute(float x){
+            return mod((x + 1.) * 20.129 + 301. / (abs(x) + 1.), 1.0);
+        }
+        vec2 permute(vec2 x){
+            return vec2(
+                permute((permute(x.x) + 1.) / (permute(x.y) + 1.)), 
+                permute((permute(x.x) + 1.) * (permute(x.y) + 1.))
+            );
+        }
+        vec3 permute(vec3 x){
+            return vec3(
+                permute(1. * (permute(x.x) + 1.) / (permute(x.y) + 1.) * (permute(x.z) + 1.)), 
+                permute(1. / (permute(x.x) + 1.) * (permute(x.y) + 1.) / (permute(x.z) + 1.)), 
+                permute(1. / (permute(x.x) + 1.) / (permute(x.y) + 1.) / (permute(x.z) + 1.))
+            );
+        }
+
+        float hash(float x){
+            return permute(permute(x));
+        }
+        vec2 hash(vec2 x){
+            return permute(permute(x));
+        }
+        vec3 hash(vec3 x){
+            return permute(permute(x));
+        }
+
+        vec3 gradient(vec3 x){
+            vec3 hashed = hash(x);
+            vec3 rand = sign(hashed - .5) * pow(abs(hashed - .5), vec3(0.8)) + .5;
+            return normalize(rand * 2. - 1.);
+        }
+
+        #define I3D(i, j, k) (i)*4 + (j)*2 + k
+
+        float perlin(vec3 x)
+        {
+            float dots[8];
+
+            for(int i = 0; i <= 1; i++)
+            {
+                for(int j = 0; j <= 1; j++)
+                {
+                    for(int k = 0; k <= 1; k++)
+                    {
+                        vec3 corner = vec3(
+                            floor(x.x) + float(i), 
+                            floor(x.y) + float(j), 
+                            floor(x.z) + float(k));
+
+                        vec3 grad = gradient(corner);
+                        dots[I3D(i, j, k)] = dot(x - corner, grad);
+                    }
+                }
+            }
+
+            vec3 s = vec3(
+                smoothstep(0., 1., mod(x.x, 1.)),
+                smoothstep(0., 1., mod(x.y, 1.)),
+                smoothstep(0., 1., mod(x.z, 1.)));
+
+            return mix(
+                mix( // x = 0
+                    mix( // y = 0
+                        dots[I3D(0, 0, 0)],
+                        dots[I3D(0, 0, 1)],
+                        s.z
+                    ),
+                    mix( // y = 1
+                        dots[I3D(0, 1, 0)],
+                        dots[I3D(0, 1, 1)],
+                        s.z
+                    ),
+                    s.y
+                ),
+                mix( // x = 1
+                    mix( // y = 0
+                        dots[I3D(1, 0, 0)],
+                        dots[I3D(1, 0, 1)],
+                        s.z
+                    ),
+                    mix( // y = 1
+                        dots[I3D(1, 1, 0)],
+                        dots[I3D(1, 1, 1)],
+                        s.z
+                    ),
+                    s.y
+                ),
+                s.x
+            ) / 2. + .5;
+        }
+
+        float perlin(vec2 pos, float scale, float timescale, float offset) {
+            return perlin(vec3(pos * scale, timescale * time + offset));
+        }
+
+        #define PI    (3.1415926535)
+        #define TWOPI (2.*PI)
+
+        vec2 rotate(vec2 pos, float amt) {
+            float c = cos(amt), s = sin(amt);
+            return vec2(
+                c * pos.x - s * pos.y,
+                s * pos.x + c * pos.y
+            );
+        }
+
+        vec2 rotate_fancy(vec2 pos, float amt) {
+            return rotate(pos, amt / length(pos));
+        }
+
+        float biasedMax(float a, float wa, float b, float wb) {
+            return a * wa > b * wb ? 
+                (a > b ? a : mix(a, b, wa)) : 
+                (b > a ? b : mix(b, a, wb));
+        }
+
         void main() {
-            gl_FragColor = vec4(1., 1., 1., 1.);
+            float minres = min(resolution.x, resolution.y);
+            vec2 pos = (gl_FragCoord.xy - resolution / 2.) / minres * 2.;
+
+            vec2 orbitVector = vec2(0.3 + 0.1 * sin(time * 0.03), 0);
+            vec2 orbitPos = rotate(orbitVector, cos(time * 0.01) + time * 0.1);
+
+            float swirl = perlin(pos, 2., 0.1, 0.);
+            vec2 swirledA = rotate_fancy(pos + orbitPos, swirl * TWOPI) - orbitPos;
+            vec2 swirledB = rotate_fancy(pos - orbitPos, swirl * TWOPI) + orbitPos;
+
+            float noiseA = perlin(swirledA, 3., 0.01, 0.);
+            float noiseB = perlin(swirledB, 3., 0.01, 10.);
+
+            float weightA = smoothstep(0., 0.3, length(+1. * orbitPos - pos));
+            float weightB = smoothstep(0., 0.3, length(-1. * orbitPos - pos));
+
+            float maxNoise = biasedMax(noiseA, weightA, noiseB, weightB);
+
+            float minfac = 1.5;
+            float noise = clamp(
+                minfac * (maxNoise - 1. + 1. / minfac),
+                0., 1.);
+
+            noise *= weightA * weightB;
+
+            gl_FragColor = vec4(noise, noise, noise, 1.);
         }
     </script>
 
     <script>
     shaderWebBackground.shade({
         shaders: {
-            background: {}
+            background: {
+                uniforms: {
+                    time: (gl, loc) => gl.uniform1f(loc, performance.now() / 1000),
+                    resolution: (gl, loc, ctx) => gl.uniform2f(loc, ctx.width, ctx.height)
+                }
+            }
         }
     });
     </script>
     <style>
     .shader-web-background-fallback {
-        background: var(--bs-white);
+        background: purple;
         background-position: center;
         background-size: cover;
         background-attachment: fixed;
