@@ -6,6 +6,14 @@
     --fg-color: var(--bs-gray-100);
 }
 
+.bg-c-white {
+    background-color: #ffffffb0;
+}
+
+.bg-c-light {
+    background-color: #d0d0d0b0;
+}
+
 .boxed {
     border-radius: var(--border-size);
     background-color: var(--fg-color);

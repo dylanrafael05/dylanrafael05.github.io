@@ -13,7 +13,7 @@
 
     <!-- The header of our page -->
     <div class="d-flex justify-content-center">
-        <div class="bg-light bg-gradient rounded m-4 p-2 px-4 text-center">
+        <div class="bg-c-light bg-gradient rounded m-4 p-2 px-4 text-center">
             <div class="display-4">Dylan Rafael <b>/</b> flooferplusplus</div>
             <hr class="border-2 border-top border-black">
             <div class="lead"><i>Engine</i>, <i>Gameplay</i>, and <i>Graphics</i> Programmer</div>
@@ -163,8 +163,8 @@
 
         float biasedMax(float a, float wa, float b, float wb) {
             return a * wa > b * wb ? 
-                (a > b ? a : mix(a, b, wa)) : 
-                (b > a ? b : mix(b, a, wb));
+                (a > b ? a : mix(a, b, wb)) : 
+                (b > a ? b : mix(b, a, wa));
         }
 
         void main() {
