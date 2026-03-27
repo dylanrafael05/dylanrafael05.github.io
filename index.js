@@ -72,8 +72,9 @@ let col = (s) => {
 
 // Generate projects //
 $(document).ready(function() {
+
+    // Generate all project containers objects //
     var project_containers = /*html*/ `<div class="row">`;
-    var details_containers = '';
 
     $.each(projects, function(index, project) {
         if (index % 2 === 0)
@@ -86,19 +87,12 @@ $(document).ready(function() {
             <div class="card bg-c-light textcol border-0 border-white">
                 <!-- <video class="card-img-top" src="${project.video}" muted autoplay loop></video> -->
                 <div class="card-body">
-                    <h5 class="card-title">
-                        <b>${project.title}</b>
-                    </h5>
+                    <h5 class="card-title"><b>${project.title}</b></h5>
                     <h6 class="card-subtitle mb-2">${project.sub}</h6>
                     <div class="card-text">${project.summary}</div>
                 </div>
                 <div class="card-footer">
-                    <button 
-                        class="btn btn-custom w-100" type="button" 
-                        data-bs-toggle="collapse" 
-                        data-bs-target=".button-affected" 
-                        aria-expanded="false" 
-                        aria-controls="project_containers details_containers">
+                    <button class="btn btn-custom w-100" type="button" id="open-details-${project.id}">
                         <i>Learn more...</i>
                     </button>
                 </div>
@@ -110,6 +104,48 @@ $(document).ready(function() {
 
     $('#project-containers').append(project_containers);
 
+    // Generate all details containers objects //
+    var details_containers = '';
+
+    $.each(projects, function(index, project) {
+        details_containers += /*html*/ `
+        <div class="collapse button-affected" id="details-${project.id}">
+            <div class="bg-c-light rounded m-4 p-2 px-4">
+                <div class="d-flex justify-content-center mt-2">
+                    <button class="btn btn-custom w-100" type="button" id="close-details-${project.id}">
+                        <i>Back</i>
+                    </button>
+                </div>
+                <hr>
+                <h1><b>${project.title}</b></h1>
+                <h3>${project.sub}</h3>
+                <hr>
+                ${project.details}
+            </div>
+        </div>
+        `;
+    });
+    
+    $('#details-containers').append(details_containers);
+    
+    // Apply all hooks //
+    $.each(projects, function(index, project) {
+        let $open = $(`#open-details-${project.id}`);
+        let $close = $(`#close-details-${project.id}`);
+        let $details = $(`#details-${project.id}`);
+        let $projects = $(`#project-containers`);
+
+        $open.on('click', function() {
+            $projects.hide();
+            $details.show();
+        });
+        $close.on('click', function() {
+            $details.hide();
+            $projects.show();
+        });
+    });
+
+    // Copy in background shader //
     $('#background').text(/*frag*/ `
     precision highp float;
 
@@ -310,6 +346,7 @@ $(document).ready(function() {
     }    
     `);
 
+    // Apply background //
     shaderWebBackground.shade({
         shaders: {
             background: {
