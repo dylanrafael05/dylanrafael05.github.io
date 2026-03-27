@@ -59,7 +59,7 @@ const projects = [
         sub: "Unity - Programming and Graphical Effects",
         video: "UntitledForestGame.mp4",
         summary: "A six-week game featuring custom terrain generation that 'forgets' itself when you leave.",
-        details: /*html*/ `
+        details: String.raw/*html*/ `
         <p class="lead">
             Untitled Forest Game was created as a group project for RPI's Experimental Game Design course. The terrain generation system was
             built from scratch by me during the six weeks we had to create the game.

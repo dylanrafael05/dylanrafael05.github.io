@@ -62,3 +62,10 @@ body {
   border-color: #29180e;
   color: var(--tex-color);
 }
+
+code {
+    color: #ffcd80;
+}
+a {
+    color: #8088ff;
+}
