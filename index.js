@@ -5,6 +5,7 @@ const projects = [
         sub: "Unity - Programming and Level Design",
         video: "Temperament.mp4",
         summary: "A rhythm game created over the course of a semester with custom code architecture and rendering.",
+        incomplete: false,
         details: String.raw/*html*/ `
         <p class="lead">
             Temperament was created as a group project for RPI's Game Development 2 course. The original concept, much of the level design,
@@ -49,6 +50,7 @@ const projects = [
         sub: "Unity - Programming, Sequence Design, and Animation",
         video: "Commencement.mp4",
         summary: "Information.",
+        incomplete: true,
         details: /*html*/ `
         Hello, world!
         `
@@ -59,6 +61,7 @@ const projects = [
         sub: "Unity - Programming and Graphical Effects",
         video: "UntitledForestGame.mp4",
         summary: "A six-week game featuring custom terrain generation that 'forgets' itself when you leave.",
+        incomplete: false,
         details: String.raw/*html*/ `
         <p class="lead">
             Untitled Forest Game was created as a group project for RPI's Experimental Game Design course. The terrain generation system was
@@ -85,6 +88,7 @@ const projects = [
         sub: "Unity - Programming",
         video: "BoxesandPortals.mp4",
         summary: "Information.",
+        incomplete: true,
         details: /*html*/ `
         Hello, world!
         `
@@ -95,6 +99,7 @@ const projects = [
         sub: "Unity - Gameplay Programming",
         video: "Domination.mp4",
         summary: "Information.",
+        incomplete: true,
         details: /*html*/ `
         Hello, world!
         `
@@ -105,6 +110,7 @@ const projects = [
         sub: "Unity - Programming and Graphical Effects",
         video: "Chinnestre.mp4",
         summary: "Information.",
+        incomplete: true,
         details: /*html*/ `
         Hello, world!
         `
@@ -119,6 +125,8 @@ let col = (s) => {
         1
     ];
 };
+
+let str_if = (b, s, e) => b ? s : (e | "");
 
 // Generate projects //
 $(document).ready(function() {
@@ -142,8 +150,8 @@ $(document).ready(function() {
                     <div class="card-text">${project.summary}</div>
                 </div>
                 <div class="card-footer">
-                    <button class="btn btn-custom w-100" type="button" id="open-details-${project.id}">
-                        <i>Learn more...</i>
+                    <button class="btn btn-custom w-100" type="button" id="open-details-${project.id}" ${str_if(project.incomplete, "disabled")}>
+                        ${project.incomplete ? "<i>Section coming soon!</i>" : "<i>Learn more...</i>"}
                     </button>
                 </div>
             </div>
