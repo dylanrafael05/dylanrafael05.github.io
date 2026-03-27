@@ -4,9 +4,43 @@ const projects = [
         title: "Temperament",
         sub: "Unity - Programming and Level Design",
         video: "Temperament.mp4",
-        summary: "Information.",
-        details: /*html*/ `
-        Hello, world!
+        summary: "A rhythm game created over the course of a semester with custom code architecture and rendering.",
+        details: String.raw/*html*/ `
+        <p class="lead">
+            Temperament was created as a group project for RPI's Game Development 2 course. The original concept, much of the level design,
+            as well as all of the rhythm game gameplay and editor tooling was implemented by me.
+        </p>
+
+        <p>
+            In order to implement the rhythm gameplay, I created various data structures and algorithms, including a custom-built set of classes
+            <code>Sequence&ltT&gt</code>, <code>Timeline&ltT&gt</code>, and <code>IntegrableTimeline&ltT&gt</code> which store objects with an associated timestamp
+            in chronological order for efficient, <span class="math-katex">\mathrm{O}(\log n)</span> lookup, and provide utilities for interpolating and integrating floating point values from these objects.
+            This system also uses a custom <code>Easing</code> class, which provides simple easing functions to allow for expressive timelines without
+            the need for bezier curves.
+        </p>
+        
+        <figure class="figure">
+            <div class="figure-img img-fluid rounded">
+                <video src="videos/SpeedGimmicks.mp4" width="320" muted autoplay loop>
+            </div>
+            <figcaption class="figure-caption textcol">
+                Because of this work, the engine supports advanced speed gimmicks, as are seen in other modern rhythm games like <i>Pump It Up</i>,
+                <i>Arcaea</i>, and <i>Rizline</i>.
+            </figcaption>
+        </figure>
+
+        <p>
+            I also developed a fully-featured level editor, supporting snapping to the beat, snapping to a horizontal grid, undo/redo, copy/paste, 
+            multiselect, editing notes without deleting them, mirroring notes horizontally, and creating/editing speed gimmicks.
+        </p>
+
+        <hr>
+
+        <p>
+            On the non-programming side of the game, I was also responsible for designing a majority of the levels included in the game.
+            As an avid rhythm-game player, and enthusiast of fanmade rhythm-game content, I have gained decent skills in the process of 'charting'
+            songs. I have even <a href="https://www.youtube.com/watch?v=Myzhn7txFgk">won a fanmade charting competition for my work on a gimmick chart.</a>
+        </p>
         `
     },
     {
@@ -24,9 +58,25 @@ const projects = [
         title: "Untitled Forest Game",
         sub: "Unity - Programming and Graphical Effects",
         video: "UntitledForestGame.mp4",
-        summary: "Information.",
+        summary: "A six-week game featuring custom terrain generation that 'forgets' itself when you leave.",
         details: /*html*/ `
-        Hello, world!
+        <p class="lead">
+            Untitled Forest Game was created as a group project for RPI's Experimental Game Design course. The terrain generation system was
+            built from scratch by me during the six weeks we had to create the game.
+        </p>
+
+        <p>
+            The core concept behind this game was that the terrain you see would regenerate whenever you leave an area and return to it,
+            but would remain smooth. To achieve this affect, I wrote a custom implementation of <i>perlin noise</i>, which cached the gradients
+            used to calculate the noise for later use, but exposed the ability to 'forget' those gradients to the API's user, allowing them to 
+            essentially 'reroll' the noise randomization whenever terrain is regenerated.
+        </p>
+
+        <p>
+            Due to this, the generation process was slower than that of a traditional terrain generator, and as such needed to be parallelized.
+            As such, the entire generation system was designed to be thread-safe, allowing for chunks to be generated (and forgotten) at the same time,
+            even despite Unity's main-thread limitations.
+        </p>
         `
     },
     {
@@ -111,16 +161,16 @@ $(document).ready(function() {
         details_containers += /*html*/ `
         <div class="collapse button-affected" id="details-${project.id}">
             <div class="bg-c-light rounded m-4 p-2 px-4">
+                <h1><b>${project.title}</b></h1>
+                <h3>${project.sub}</h3>
+                <hr>
+                ${project.details}
+                <hr>
                 <div class="d-flex justify-content-center mt-2">
                     <button class="btn btn-custom w-100" type="button" id="close-details-${project.id}">
                         <i>Back</i>
                     </button>
                 </div>
-                <hr>
-                <h1><b>${project.title}</b></h1>
-                <h3>${project.sub}</h3>
-                <hr>
-                ${project.details}
             </div>
         </div>
         `;
@@ -277,6 +327,20 @@ $(document).ready(function() {
         return (uv - resolution / 2.) / min(resolution.x, resolution.y) * 2.;
     }
 
+    float linearstep(float e0, float e1, float x)
+    {
+        if(e0 < e1) {
+            return x < e0 ? 0.
+                 : x > e1 ? 1.
+                 : (x - e0) / (e1 - e0);
+        }
+        else {
+            return x < e1 ? 1.
+                 : x > e0 ? 0.
+                 : 1. - (x - e1) / (e0 - e1);
+        }
+    }
+
     // Main shader code //
     void main() {
         const float minfac = 1.5;
@@ -335,14 +399,14 @@ $(document).ready(function() {
         // Compute the strength of the vignette effect //
         vec2 vignetteDists = min(abs(pos - minpos), abs(pos - maxpos));
         float vignetteDist = min(vignetteDists.x, vignetteDists.y);
-        float vignette = smoothstep(vigdist, 0., vignetteDist);
+        float vignette = linearstep(vigdist, 0., vignetteDist);
 
         gl_FragColor = mix(
             secondary_color,
             main_color,
             smoothstep(0., 1., noise)
-        ) 
-        * mix(1., vigmul, vignette);
+        );
+        gl_FragColor *= mix(1., vigmul, vignette);
     }    
     `);
 
@@ -359,4 +423,23 @@ $(document).ready(function() {
             }
         }
     });
+
+    // Render all KaTeX //
+    // Adapted from https://sixthform.info/katex/guide.html //
+    let allkatex = document.getElementsByClassName('math-katex');
+
+	for (let i = 0; i < allkatex.length; i++) 
+    {
+        let item = allkatex[i];
+
+        try 
+        {
+            katex.render(item.textContent, item);
+        }
+        catch(err) 
+        {
+            item.style.color = 'red';
+            item.textContent = err;
+		}
+	}
 });
